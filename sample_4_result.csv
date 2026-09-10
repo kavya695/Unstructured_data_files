@@ -1,0 +1,2 @@
+﻿source_file,account_number,account_type,lender,date_opened,sanctioned_amount,current_balance,emi_amount,payment_status,days_past_due,last_payment_date,credit_score,invoice_number,invoice_date,due_date,bill_to,subtotal,tax_amount,total_amount,account_holder,statement_period,opening_balance,closing_balance,source_type,document_category,category_confidence,ocr_confidence,transactions,missing_required_fields,needs_review
+sample_4_invoice.png,,,,,,,,,,,,INV-2026-00871,2026-08-20,2026-09-04,"Ramesh Traders, Bengaluru",6180.0,,7292.0,,,,,scanned,invoice,1.0,94.5,[],[],False
