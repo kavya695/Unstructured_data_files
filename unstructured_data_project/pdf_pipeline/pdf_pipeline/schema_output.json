@@ -1,0 +1,481 @@
+{
+  "documents_processed": [
+    "../sample.pdf",
+    "../sample_po.docx",
+    "../sample_invoice.eml"
+  ],
+  "clusters": {
+    "0": {
+      "top_terms": [
+        "55826",
+        "id",
+        "18",
+        "information",
+        "voter id",
+        "voter"
+      ],
+      "chunks": [
+        "HEADER",
+        "DATE OF BIRTH: 16-08-1976 55332211 INCOME TAX ID: AMYFK0228P",
+        "GENDER: MALE 52951 PASSPORT NO:",
+        "SCORE SCORING FACTORS",
+        "ACCOUNT TYPE ACCOUNTS ADVANCES BALANCES DATE OPENED",
+        "ENQUIRY PURPOSE TOTAL PAST 30 DAYS PAST 12 MONTHS PAST 24 MONTHS RECENT",
+        "CONSUMER/BORROWER: PRABHU KABALI",
+        "REPORTED: 18-03-2005",
+        "END OF REPORT ON PRABHU KABALI",
+        "HEADER",
+        "HEADER"
+      ]
+    },
+    "1": {
+      "top_terms": [
+        "04",
+        "000",
+        "03",
+        "02",
+        "24",
+        "000 000"
+      ],
+      "chunks": [
+        "ADDRESS DATE REPORTED",
+        "TAMIL NADU 600053",
+        "ACCOUNT DATES AMOUNTS STATUS",
+        "OWNERSHIP: INDIVIDUAL REPORTED: 15-02-2005",
+        "OWNERSHIP: INDIVIDUAL REPORTED: 15-03-2002",
+        "OVERDUE: 1,234"
+      ]
+    },
+    "2": {
+      "top_terms": [
+        "consumer credit",
+        "consumer",
+        "\u00e9s",
+        "ij \u00e9s",
+        "ij",
+        "ale"
+      ],
+      "chunks": [
+        "IN ASSOCIATION WITH DUN & BRADSTREET AND TRANSUNION",
+        "IN ASSOCIATION WITH DUN & BRADSTREET AND TRANSUNION"
+      ]
+    }
+  },
+  "schemas_by_document": {
+    "../sample.pdf": {
+      "document_type": "credit_report",
+      "type_confidence": 0.8,
+      "type_scores": {
+        "invoice": 0,
+        "purchase_order": 0,
+        "bank_statement": 2,
+        "credit_report": 16,
+        "medical_record": 0,
+        "resume": 2,
+        "contract": 0
+      },
+      "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "auto_discovered_schema",
+        "type": "object",
+        "properties": {
+          "consumer_borrower": {
+            "type": "string",
+            "source_label": "CONSUMER/BORROWER",
+            "occurrences": 2
+          },
+          "kabali_date": {
+            "type": "date",
+            "source_label": "KABALI DATE",
+            "occurrences": 1
+          },
+          "member_id": {
+            "type": "string",
+            "source_label": "MEMBER ID",
+            "occurrences": 2
+          },
+          "member_reference_number": {
+            "type": "string",
+            "source_label": "MEMBER REFERENCE NUMBER",
+            "occurrences": 2
+          },
+          "control_number": {
+            "type": "number",
+            "source_label": "CONTROL NUMBER",
+            "occurrences": 2
+          },
+          "name": {
+            "type": "string",
+            "source_label": "NAME",
+            "occurrences": 1
+          },
+          "date_of_birth": {
+            "type": "string",
+            "source_label": "DATE OF BIRTH",
+            "occurrences": 1
+          },
+          "income_tax_id": {
+            "type": "string",
+            "source_label": "INCOME TAX ID",
+            "occurrences": 1
+          },
+          "gender": {
+            "type": "string",
+            "source_label": "GENDER",
+            "occurrences": 1
+          },
+          "all_accounts_total": {
+            "type": "string",
+            "source_label": "All Accounts TOTAL",
+            "occurrences": 1
+          },
+          "amt": {
+            "type": "number",
+            "source_label": "AMT",
+            "occurrences": 1
+          },
+          "current": {
+            "type": "number",
+            "source_label": "CURRENT",
+            "occurrences": 1
+          },
+          "recent": {
+            "type": "date",
+            "source_label": "RECENT",
+            "occurrences": 1
+          },
+          "overdue": {
+            "type": "number",
+            "source_label": "OVERDUE",
+            "occurrences": 5
+          },
+          "oldest": {
+            "type": "date",
+            "source_label": "OLDEST",
+            "occurrences": 1
+          },
+          "balance": {
+            "type": "number",
+            "source_label": "BALANCE",
+            "occurrences": 1
+          },
+          "member_name": {
+            "type": "string",
+            "source_label": "MEMBER NAME",
+            "occurrences": 3
+          },
+          "disclosed_opened": {
+            "type": "date",
+            "source_label": "DISCLOSED OPENED",
+            "occurrences": 1
+          },
+          "sanctioned": {
+            "type": "string",
+            "source_label": "SANCTIONED",
+            "occurrences": 2
+          },
+          "account_number": {
+            "type": "string",
+            "source_label": "ACCOUNT NUMBER",
+            "occurrences": 3
+          },
+          "last_payment": {
+            "type": "date",
+            "source_label": "LAST PAYMENT",
+            "occurrences": 3
+          },
+          "current_balance": {
+            "type": "number",
+            "source_label": "CURRENT BALANCE",
+            "occurrences": 3
+          },
+          "type": {
+            "type": "string",
+            "source_label": "TYPE",
+            "occurrences": 3
+          },
+          "loan_closed": {
+            "type": "date",
+            "source_label": "LOAN CLOSED",
+            "occurrences": 1
+          },
+          "ownership": {
+            "type": "string",
+            "source_label": "OWNERSHIP",
+            "occurrences": 3
+          },
+          "reported": {
+            "type": "date",
+            "source_label": "REPORTED",
+            "occurrences": 3
+          },
+          "date": {
+            "type": "date",
+            "source_label": "DATE",
+            "occurrences": 1
+          },
+          "bank_opened": {
+            "type": "date",
+            "source_label": "BANK OPENED",
+            "occurrences": 1
+          },
+          "opened": {
+            "type": "date",
+            "source_label": "OPENED",
+            "occurrences": 1
+          },
+          "high_credit": {
+            "type": "number",
+            "source_label": "HIGH CREDIT",
+            "occurrences": 1
+          }
+        }
+      },
+      "examples": {
+        "consumer_borrower": [
+          "PRABHU",
+          "PRABHU KABALI"
+        ],
+        "kabali_date": [
+          "12-10-2006"
+        ],
+        "member_id": [
+          "BP00340001 (IMAGINARY",
+          "BP00340001 (IMAGINARY BANk)"
+        ],
+        "member_reference_number": [
+          "BB-ENQ0O1",
+          "BB-ENQ01"
+        ],
+        "control_number": [
+          "295,360,133",
+          "295,360,133"
+        ],
+        "name": [
+          "PRABHU KABALI"
+        ],
+        "date_of_birth": [
+          "16-08-1976 55332211"
+        ],
+        "income_tax_id": [
+          "AMYFK0228P"
+        ],
+        "gender": [
+          "MALE 52951"
+        ],
+        "all_accounts_total": [
+          "3 HIGH CR/SANC."
+        ],
+        "amt": [
+          "78,000"
+        ],
+        "current": [
+          "6431"
+        ],
+        "recent": [
+          "18-3-2005"
+        ],
+        "overdue": [
+          "2",
+          "6431",
+          "0"
+        ],
+        "oldest": [
+          "03-02-2001"
+        ],
+        "balance": [
+          "1"
+        ],
+        "member_name": [
+          "NOT",
+          "IMAGINARY",
+          "NOT DISCLOSED"
+        ],
+        "disclosed_opened": [
+          "10-01-2001"
+        ],
+        "sanctioned": [
+          "16,000 Written Off",
+          "27,000"
+        ],
+        "account_number": [
+          "NOT DISCLOSED \u2014",
+          "RKP514",
+          "NOT DISCLOSED"
+        ],
+        "last_payment": [
+          "10-01-2005",
+          "29-06-2004",
+          "28-06-2002"
+        ],
+        "current_balance": [
+          "0",
+          "5,197",
+          "1,234"
+        ],
+        "type": [
+          "AUTO",
+          "CONSUMER",
+          "CREDIT CARD"
+        ],
+        "loan_closed": [
+          "24-12-2004"
+        ],
+        "ownership": [
+          "INDIVIDUAL",
+          "INDIVIDUAL",
+          "INDIVIDUAL"
+        ],
+        "reported": [
+          "15-02-2005",
+          "15-03-2002",
+          "18-03-2005"
+        ],
+        "date": [
+          "12-10-2006"
+        ],
+        "bank_opened": [
+          "10-07-2001"
+        ],
+        "opened": [
+          "10-06-2001"
+        ],
+        "high_credit": [
+          "35,000"
+        ]
+      }
+    },
+    "../sample_po.docx": {
+      "document_type": "purchase_order",
+      "type_confidence": 0.85,
+      "type_scores": {
+        "invoice": 2,
+        "purchase_order": 11,
+        "bank_statement": 0,
+        "credit_report": 0,
+        "medical_record": 0,
+        "resume": 0,
+        "contract": 0
+      },
+      "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "auto_discovered_schema",
+        "type": "object",
+        "properties": {
+          "po_number": {
+            "type": "string",
+            "source_label": "PO Number",
+            "occurrences": 1
+          },
+          "po_date": {
+            "type": "date",
+            "source_label": "PO Date",
+            "occurrences": 1
+          },
+          "vendor_name": {
+            "type": "string",
+            "source_label": "Vendor Name",
+            "occurrences": 1
+          },
+          "total_amount": {
+            "type": "number",
+            "source_label": "Total Amount",
+            "occurrences": 1
+          }
+        }
+      },
+      "examples": {
+        "po_number": [
+          "PO-8891"
+        ],
+        "po_date": [
+          "15-08-2026"
+        ],
+        "vendor_name": [
+          "Acme Supplies"
+        ],
+        "total_amount": [
+          "12,400"
+        ]
+      }
+    },
+    "../sample_invoice.eml": {
+      "document_type": "invoice",
+      "type_confidence": 0.69,
+      "type_scores": {
+        "invoice": 9,
+        "purchase_order": 4,
+        "bank_statement": 0,
+        "credit_report": 0,
+        "medical_record": 0,
+        "resume": 0,
+        "contract": 0
+      },
+      "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "auto_discovered_schema",
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "source_label": "Subject",
+            "occurrences": 1
+          },
+          "from": {
+            "type": "string",
+            "source_label": "From",
+            "occurrences": 1
+          },
+          "date": {
+            "type": "string",
+            "source_label": "Date",
+            "occurrences": 1
+          },
+          "invoice_number": {
+            "type": "string",
+            "source_label": "Invoice Number",
+            "occurrences": 1
+          },
+          "invoice_date": {
+            "type": "date",
+            "source_label": "Invoice Date",
+            "occurrences": 1
+          },
+          "vendor_name": {
+            "type": "string",
+            "source_label": "Vendor Name",
+            "occurrences": 1
+          },
+          "total_amount": {
+            "type": "number",
+            "source_label": "Total Amount",
+            "occurrences": 1
+          }
+        }
+      },
+      "examples": {
+        "subject": [
+          "Invoice INV-5521 due"
+        ],
+        "from": [
+          "billing@acmesupplies.com"
+        ],
+        "date": [
+          "Tue, 18"
+        ],
+        "invoice_number": [
+          "INV-5521"
+        ],
+        "invoice_date": [
+          "18-08-2026"
+        ],
+        "vendor_name": [
+          "Acme Supplies"
+        ],
+        "total_amount": [
+          "9,800"
+        ]
+      }
+    }
+  }
+}
