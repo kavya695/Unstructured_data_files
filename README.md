@@ -1,128 +1,100 @@
-# OCR Document Extraction Pipeline
+# Multi-format -> TF-IDF -> Clustering -> Schema pipeline
 
-Turns an image (scanned page, phone photo, or app screenshot) of a financial
-document into structured, typed JSON:
+Handles **PDF, Word (.docx), and Email (.eml / .msg)** as input, all
+normalized to the same internal shape so chunking/TF-IDF/clustering/schema
+inference is 100% shared code regardless of source format.
 
+## Setup
 ```
-Image -> preprocess (per input type) -> OCR (text + coordinates)
-       -> document-type classification -> field/table extraction
-       -> normalization -> schema
+pip install -r requirements.txt --break-system-packages
 ```
+Also needs the `tesseract` OCR binary on the system PATH (used only when a
+PDF page has no text layer, i.e. it's scanned):
+- Windows: https://github.com/UB-Mannheim/tesseract/wiki
+- Mac: `brew install tesseract`
+- Linux: `sudo apt install tesseract-ocr`
 
-## Install
-
-```bash
-sudo apt-get install tesseract-ocr        # system binary (Linux)
-pip install pytesseract opencv-python numpy --break-system-packages
+## Run
 ```
-
-## Use
-
-```python
-from ocr_pipeline.pipeline import process_document
-
-result = process_document("statement.png", doc_type="scanned")  # or "photo" / "screenshot"
-print(result["fields"]["current_balance"])   # 245000.0 (float, ready to use)
-print(result["validation"]["needs_review"])  # True if confidence is low or required fields are missing
+python3 main.py file1.pdf file2.docx file3.eml ...
 ```
+Mix and match any supported formats in one call — they get pooled together
+for clustering. Output goes to `schema_output.json`.
 
-Or from the command line:
-
-```bash
-python3 -m ocr_pipeline.pipeline statement.png scanned
-python3 -m ocr_pipeline.run_samples   # runs all 3 bundled samples
+### "Run all" mode — no need to list files or put them in a subfolder
+Just drop your PDFs/Word docs/emails loose into this same folder (next to
+`main.py`) and run with no arguments:
 ```
-
-If you don't know the input type ahead of time, omit `doc_type` and
-`classify_doc_type()` will guess from image statistics (rough heuristic —
-better to have your upload UI tell you the type directly if you can).
-
-## Files
-
-| File | Responsibility |
-|---|---|
-| `preprocess.py` | Per-type image cleanup: deskew, perspective-correct, denoise, lighting normalization |
-| `ocr.py` | Runs Tesseract, returns word-level text + bounding boxes, groups into lines |
-| `classify.py` | Identifies the document *type* (invoice / bank statement / credit report) from its OCR'd text, via keyword rules first, trained TF-IDF model as fallback |
-| `train_classifier.py` | Builds a synthetic labeled corpus and trains the TF-IDF classifier used by `classify.py` |
-| `extract.py` | Finds `label: value` pairs, grid/card layouts, and transaction tables |
-| `normalize.py` | Types and cleans raw strings into a fixed schema (currency → float, dates → ISO, etc.); picks required fields based on document category |
-| `pipeline.py` | Wires the above together; `process_document()` is the main entry point |
-
-## Document type classification
-
-Before field extraction runs, `classify_document()` (in `classify.py`) figures
-out *what kind* of document this is, using two strategies in order:
-
-1. **Keyword rules** (`KEYWORD_RULES` dict) — instant, no training needed.
-   Checks the OCR'd text for distinctive phrases per category (e.g. "tax
-   invoice", "opening balance", "credit account details"). This is the
-   default and works as long as your real documents use similar wording.
-2. **TF-IDF + Logistic Regression** (`DocumentTypeClassifier`) — only used
-   as a fallback when keyword rules aren't confident. Needs a trained model
-   file (`classifier_model.pkl`, already included, trained on synthetic
-   data — see below). Handles wording variation the keyword list doesn't
-   cover, at the cost of needing labeled training examples.
-
-Retrain on your own labeled data once you have some:
-
-```python
-from train_classifier import train_from_csv
-train_from_csv("my_labeled_documents.csv")  # columns: text,label
+python3 main.py
 ```
+It auto-discovers every file with a supported extension sitting directly in
+this folder (not subfolders), skips the pipeline's own files
+(`document_types.json`, `requirements.txt`, etc.), and processes all of them
+in one go.
 
-The output schema now includes:
+## Supported formats
+| Extension | How it's read | Extra dependency |
+|---|---|---|
+| `.pdf` | PyMuPDF text layer, OCR fallback for scanned pages | `pymupdf`, `pytesseract` (+ tesseract binary) |
+| `.docx` | python-docx: paragraphs + tables (tables kept separate from prose) | `python-docx` |
+| `.eml` | stdlib `email` module — headers become Label:Value lines automatically | none |
+| `.msg` | Outlook binary format | `extract-msg` |
+| `.txt` | read as-is | none |
+
+**Not supported directly:** old binary `.doc`. Convert first, e.g.:
+`libreoffice --headless --convert-to docx yourfile.doc`
+
+## Adding a new format
+1. Write a function in `extractors/your_format.py` that takes a path and
+   returns `list[str]` (one string per "page"/section).
+2. Register the extension in `EXTRACTORS` at the top of `extract.py`.
+   Nothing else changes — chunking, TF-IDF, clustering, and schema
+   inference all operate on the same normalized `{page, line}` shape.
+
+## Document type classification (NEW)
+Every document is now also tagged with a `document_type` (invoice, purchase_order,
+bank_statement, credit_report, medical_record, resume, contract, or `unknown`),
+plus a confidence score, in `schema_output.json`.
+
+This is fully **config-driven** — edit `document_types.json` to add a new type
+or tune keywords for an existing one. No code changes needed:
 ```json
-"document_category": {
-  "category": "invoice",
-  "method": "keyword_rules",
-  "confidence": 1.0,
-  "matched_phrases": ["tax invoice", "invoice number", "bill to"]
+"bank_statement": {
+  "keywords": ["account statement", "opening balance", "closing balance", "ifsc"],
+  "field_hints": ["account_number", "opening_balance", "closing_balance"]
 }
 ```
-Which required fields get checked for `needs_review` also depends on this —
-see `REQUIRED_FIELDS_BY_CATEGORY` in `normalize.py` (a bank statement isn't
-penalized for missing an `emi_amount`, etc.).
+`keywords` are phrases matched anywhere in the document's raw text (1 point each).
+`field_hints` are normalized field names that schema_infer.py already discovered
+via Label:Value pattern matching (2 points each, since a real structured field
+match is a stronger signal than a keyword appearing once in a sentence). Highest
+score wins; ties/no-match fall back to `unknown`.
 
-## Extending to your own fields
+Tested on your CIBIL PDF, the sample purchase order docx, and the sample
+invoice eml — all three classified correctly with clear confidence separation
+(credit_report 0.80, purchase_order 0.85, invoice 0.69).
 
-Everything field-specific lives in two places:
+## Files
+- `extract.py` – Stage 1-2: dispatches to the right extractor by file extension, then cleans lines
+- `extractors/pdf_extractor.py` – PDF text + OCR fallback
+- `extractors/docx_extractor.py` – Word paragraphs + tables
+- `extractors/email_extractor.py` – .eml (stdlib) and .msg (extract-msg) parsing, headers + body + attachment names
+- `chunk.py` – Stage 3: split lines into sections by heading detection
+- `tfidf_cluster.py` – Stage 4-5: TF-IDF vectorize chunks, KMeans cluster
+- `schema_infer.py` – Stage 6-7: regex-based "Label: Value" field discovery, type inference, JSON Schema generation
+- `classify.py` – Stage 8: document-type classification (invoice / bank statement / etc.), config-driven via `document_types.json`
+- `document_types.json` – editable list of document types and their keyword/field signatures
+- `main.py` – ties it all together
 
-1. **`extract.py` → `LABEL_ALIASES`**: map any label spelling/OCR variant you
-   see to a canonical key, e.g. `"outstanding amt": "current_balance"`.
-2. **`normalize.py` → `SCHEMA_NORMALIZERS`**: add the canonical key with a
-   function that converts the raw string to its final type.
-
-Both the colon-based extractor (`"Label: Value"`) and the grid extractor
-(labels in one row, values in the row below — common in dashboard
-screenshots) key off the same `LABEL_ALIASES` map, so one addition covers
-both layouts.
-
-## Known limitations (things to improve before production)
-
-- `classify_doc_type()` (input format: scanned/photo/screenshot) is a rough
-  brightness/saturation heuristic, not a trained classifier — fine for a
-  demo, not for real traffic. Better to have the upload flow tell you the
-  type, or train a small image classifier. (This is separate from document
-  *category* classification below — one asks "how was this captured," the
-  other asks "what kind of document is it.")
-- Document category classification's keyword rules were written by hand for
-  3 categories with fairly distinctive vocabularies — add your own phrases to
-  `KEYWORD_RULES` in `classify.py` for new categories, or retrain the TF-IDF
-  model on real labeled examples once you have them (synthetic training
-  text only teaches the model vocabulary someone thought to generate).
-- `classify_by_keywords()` uses hit-counting, not a calibrated probability —
-  treat `confidence` as "how many distinctive phrases matched," not a true
-  statistical confidence.
-- The transaction-table parser assumes a `Date | Description | Debit |
-  Credit | Balance` shape with clear column gaps. Real bank statements vary
-  a lot — you'll likely want per-bank table templates for production. It
-  can also mistake a trailing footer line for an extra (garbage) row if the
-  footer happens to contain digits — worth a stricter "stop" condition if
-  this shows up on real statements.
-- No support yet for multi-page PDFs — `pdf2image` can convert each page to
-  a PNG first, then feed each page through `process_document()` individually.
-- Field values pulled from a status *badge* rather than the label grid (e.g.
-  "Status: Current" floating outside the label row) aren't picked up —
-  visible in the bundled screenshot sample, correctly flagged via
-  `needs_review`.
+## Notes
+- Tested end-to-end on a scanned CIBIL credit report (PDF, OCR path), a
+  synthetic purchase order (.docx, paragraphs + table), and a synthetic
+  invoice email (.eml, headers + body) — all three produced correct,
+  distinct schemas in one run of `main.py`.
+- Email headers (Subject/From/To/Date) are emitted as literal
+  "Label: Value" lines, so they fall straight into the same field-discovery
+  regex as everything else — no special-casing needed.
+- With more documents, clustering starts grouping similar document *types*
+  together across formats (e.g. all your invoices, regardless of whether
+  they arrived as PDF or email, land in the same cluster) rather than just
+  sections within one file.

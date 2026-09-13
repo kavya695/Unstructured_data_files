@@ -1,24 +1,36 @@
 {
   "documents_processed": [
+    "sample.eml",
     "test.pdf"
   ],
   "clusters": {
     "0": {
       "top_terms": [
+        "credit",
         "55826",
         "information",
-        "credit",
-        "credit information",
-        "voter id",
-        "id"
+        "000",
+        "bank",
+        "2026"
       ],
       "chunks": [
+        "HEADER",
+        "CUSTOMER INFORMATION",
+        "PAN: SAMPLEP1234A",
+        "ACCOUNT INFORMATION",
+        "RECENT CREDIT ENQUIRY",
+        "REVIEW NOTES",
         "HEADER",
         "IN ASSOCIATION WITH DUN & BRADSTREET AND TRANSUNION",
         "DATE OF BIRTH: 16-08-1976 55332211 INCOME TAX ID: AMYFK0228P",
         "GENDER: MALE 52951 PASSPORT NO:",
         "SCORE SCORING FACTORS",
+        "ACCOUNT TYPE ACCOUNTS ADVANCES BALANCES DATE OPENED",
+        "ACCOUNT DATES AMOUNTS STATUS",
         "OWNERSHIP: INDIVIDUAL",
+        "REPORTED: 18-03-2005",
+        "STATUS",
+        "AUTOMOBILE LOAN",
         "END OF REPORT ON PRABHU KABALI"
       ]
     },
@@ -27,44 +39,248 @@
         "2006",
         "24",
         "18",
-        "18 2006",
         "enquiries 18",
-        "enquiries"
+        "enquiries",
+        "18 2006"
       ],
       "chunks": [
         "ADDRESS DATE REPORTED",
         "TAMIL NADU 600053",
-        "ACCOUNT TYPE ACCOUNTS ADVANCES BALANCES DATE OPENED",
         "ENQUIRY PURPOSE TOTAL PAST 30 DAYS PAST 12 MONTHS PAST 24 MONTHS RECENT",
-        "ACCOUNT DATES AMOUNTS STATUS",
         "NOT DISCLOSED"
       ]
     },
     "2": {
       "top_terms": [
         "04",
-        "03",
         "02",
+        "03",
         "000",
-        "std",
-        "05"
+        "05",
+        "000 000"
       ],
       "chunks": [
         "OWNERSHIP: INDIVIDUAL REPORTED: 15-02-2005",
         "REPORTED: 15-03-2002",
         "XXX 000 XXX 000 012",
         "SUB STD 000 015 000",
-        "REPORTED: 18-03-2005",
         "OVERDUE: 5,197",
-        "STATUS",
         "STD STD STD",
-        "STATUS",
-        "AUTOMOBILE LOAN"
+        "STATUS"
       ]
     }
   },
   "schemas_by_document": {
+    "sample.eml": {
+      "document_type": "credit_report",
+      "type_confidence": 0.67,
+      "type_scores": {
+        "invoice": 0,
+        "purchase_order": 0,
+        "bank_statement": 2,
+        "credit_report": 4,
+        "medical_record": 0,
+        "resume": 0,
+        "contract": 0
+      },
+      "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "auto_discovered_schema",
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "source_label": "Subject",
+            "occurrences": 1
+          },
+          "from": {
+            "type": "string",
+            "source_label": "From",
+            "occurrences": 1
+          },
+          "date": {
+            "type": "string",
+            "source_label": "Date",
+            "occurrences": 1
+          },
+          "customer_name": {
+            "type": "string",
+            "source_label": "Customer Name",
+            "occurrences": 1
+          },
+          "customer_reference_number": {
+            "type": "string",
+            "source_label": "Customer Reference Number",
+            "occurrences": 1
+          },
+          "date_of_birth": {
+            "type": "date",
+            "source_label": "Date of Birth",
+            "occurrences": 1
+          },
+          "gender": {
+            "type": "string",
+            "source_label": "Gender",
+            "occurrences": 1
+          },
+          "pan": {
+            "type": "string",
+            "source_label": "PAN",
+            "occurrences": 1
+          },
+          "employment_type": {
+            "type": "string",
+            "source_label": "Employment Type",
+            "occurrences": 1
+          },
+          "account_number": {
+            "type": "string",
+            "source_label": "Account Number",
+            "occurrences": 1
+          },
+          "account_type": {
+            "type": "string",
+            "source_label": "Account Type",
+            "occurrences": 1
+          },
+          "member_name": {
+            "type": "string",
+            "source_label": "Member Name",
+            "occurrences": 1
+          },
+          "ownership": {
+            "type": "string",
+            "source_label": "Ownership",
+            "occurrences": 1
+          },
+          "date_opened": {
+            "type": "date",
+            "source_label": "Date Opened",
+            "occurrences": 1
+          },
+          "last_payment_date": {
+            "type": "date",
+            "source_label": "Last Payment Date",
+            "occurrences": 1
+          },
+          "current_balance": {
+            "type": "number",
+            "source_label": "Current Balance",
+            "occurrences": 1
+          },
+          "overdue_amount": {
+            "type": "number",
+            "source_label": "Overdue Amount",
+            "occurrences": 1
+          },
+          "status": {
+            "type": "string",
+            "source_label": "Status",
+            "occurrences": 1
+          },
+          "enquiry_reference": {
+            "type": "string",
+            "source_label": "Enquiry Reference",
+            "occurrences": 1
+          },
+          "enquiry_date": {
+            "type": "date",
+            "source_label": "Enquiry Date",
+            "occurrences": 1
+          },
+          "enquiry_purpose": {
+            "type": "string",
+            "source_label": "Enquiry Purpose",
+            "occurrences": 1
+          },
+          "enquiring_member": {
+            "type": "string",
+            "source_label": "Enquiring Member",
+            "occurrences": 1
+          }
+        }
+      },
+      "examples": {
+        "subject": [
+          "Credit Account Review - Customer Reference CR-2026-10482"
+        ],
+        "from": [
+          "credit.operations@examplebank.com"
+        ],
+        "date": [
+          "Thu, 10"
+        ],
+        "customer_name": [
+          "Ananya Rao"
+        ],
+        "customer_reference_number": [
+          "CR-2026-10482"
+        ],
+        "date_of_birth": [
+          "14-06-1988"
+        ],
+        "gender": [
+          "FEMALE"
+        ],
+        "pan": [
+          "SAMPLEP1234A"
+        ],
+        "employment_type": [
+          "SALARIED"
+        ],
+        "account_number": [
+          "XXXX4521"
+        ],
+        "account_type": [
+          "PERSONAL LOAN"
+        ],
+        "member_name": [
+          "Example Bank"
+        ],
+        "ownership": [
+          "INDIVIDUAL"
+        ],
+        "date_opened": [
+          "12-03-2022"
+        ],
+        "last_payment_date": [
+          "05-08-2026"
+        ],
+        "current_balance": [
+          "185000"
+        ],
+        "overdue_amount": [
+          "0"
+        ],
+        "status": [
+          "STD"
+        ],
+        "enquiry_reference": [
+          "ENQ-2026-7781"
+        ],
+        "enquiry_date": [
+          "22-08-2026"
+        ],
+        "enquiry_purpose": [
+          "PERSONAL LOAN"
+        ],
+        "enquiring_member": [
+          "Example Bank"
+        ]
+      }
+    },
     "test.pdf": {
+      "document_type": "credit_report",
+      "type_confidence": 0.8,
+      "type_scores": {
+        "invoice": 0,
+        "purchase_order": 0,
+        "bank_statement": 2,
+        "credit_report": 16,
+        "medical_record": 0,
+        "resume": 2,
+        "contract": 0
+      },
       "schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "auto_discovered_schema",
