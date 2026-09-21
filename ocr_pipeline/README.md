@@ -16,7 +16,50 @@ sudo apt-get install tesseract-ocr        # system binary (Linux)
 pip install pytesseract opencv-python numpy --break-system-packages
 ```
 
-## Use
+## Run the project
+
+Run these commands from the project parent folder:
+
+```powershell
+cd "C:\Users\ksont\Downloads\ocr_pipeline (1)"
+python -m pip install -r ".\ocr_pipeline\requirements.txt"
+```
+
+The sample images are stored in `ocr_pipeline\input`.
+
+To run OCR for all samples and print the results in the terminal:
+
+```powershell
+python -m ocr_pipeline.run_samples
+```
+
+To create both output files in `ocr_pipeline\results`:
+
+```powershell
+New-Item -ItemType Directory -Force ".\ocr_pipeline\results"
+
+python -m ocr_pipeline.csv_export `
+  --output ".\ocr_pipeline\results\all_samples_result.csv"
+
+python -m ocr_pipeline.json_export `
+  --output ".\ocr_pipeline\results\all_samples_result.json"
+```
+
+The files created are:
+
+- `ocr_pipeline\results\all_samples_result.csv`
+- `ocr_pipeline\results\all_samples_result.json`
+
+To process only one image:
+
+```powershell
+python -m ocr_pipeline.cli `
+  ".\ocr_pipeline\input\sample_5_bank_statement.png" `
+  scanned `
+  ".\ocr_pipeline\results\result.json"
+```
+
+## Python API
 
 ```python
 from ocr_pipeline.pipeline import process_document
@@ -25,28 +68,6 @@ result = process_document("statement.png", doc_type="scanned")  # or "photo" / "
 print(result["fields"]["current_balance"])   # 245000.0 (float, ready to use)
 print(result["validation"]["needs_review"])  # True if confidence is low or required fields are missing
 ```
-
-Or from the command line:
-
-```bash
-python3 -m ocr_pipeline.pipeline statement.png scanned
-python3 -m ocr_pipeline.run_samples   # runs all 3 bundled samples
-```
-
-To save the complete nested result as JSON from the command line, use a `.json`
-output path:
-
-```bash
-python3 -m ocr_pipeline.cli statement.png scanned result.json
-```
-
-To export all bundled samples to one JSON array:
-
-```bash
-python3 -m ocr_pipeline.json_export
-```
-
-The default output is `all_samples_result.json` in the `ocr_pipeline` folder.
 
 If you don't know the input type ahead of time, omit `doc_type` and
 `classify_doc_type()` will guess from image statistics (rough heuristic —
