@@ -1,0 +1,475 @@
+[
+  {
+    "source_file": "sample_1_scanned_credit_report.png",
+    "document_type": "scanned",
+    "result": {
+      "source_type": "scanned",
+      "document_category": {
+        "category": "credit_report",
+        "method": "keyword_rules",
+        "confidence": 1.0,
+        "matched_phrases": [
+          "credit account details",
+          "consumer credit information",
+          "payment status",
+          "days past due",
+          "sanctioned amount",
+          "credit score"
+        ]
+      },
+      "ocr_confidence": 91.1,
+      "fields": {
+        "account_number": "XXXXXXXX4821",
+        "account_type": "Personal Loan",
+        "lender": "Horizon Finance Bank",
+        "date_opened": "2022-03-15",
+        "sanctioned_amount": 500000.0,
+        "current_balance": 245000.0,
+        "emi_amount": 12450.0,
+        "payment_status": "Active - Current",
+        "days_past_due": null,
+        "last_payment_date": "2026-08-01",
+        "credit_score": 742,
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "bill_to": null,
+        "subtotal": null,
+        "tax_amount": null,
+        "total_amount": null,
+        "account_holder": null,
+        "statement_period": null,
+        "opening_balance": null,
+        "closing_balance": null
+      },
+      "transactions": [],
+      "validation": {
+        "missing_required_fields": [],
+        "needs_review": false
+      },
+      "image_quality": {
+        "blur_score": 1161.6,
+        "brightness": 224.0,
+        "contrast": 57.5,
+        "is_blank": false,
+        "issues": [],
+        "quality_score": 100.0,
+        "recommend_reject": false
+      },
+      "_debug": {
+        "detected_doc_type": "scanned",
+        "raw_lines": [
+          "Consumer Credit Information Report (Sample) ee aT renee ial",
+          "CREDIT ACCOUNT DETAILS",
+          "Account Number: XXXXXXXX4821",
+          "Account Type: Personal Loan",
+          "Lender: Horizon Finance Bank",
+          "Date Opened: 15/03/2022",
+          "Sanctioned Amount: Rs. 5,00,000",
+          "Current Balance: Rs. 2,45,000",
+          "EMI Amount: Rs. 12,450",
+          "Payment Status: Active - Current",
+          "Days Past Due: fo)",
+          "Last Payment Date: 01/08/2026",
+          "Credit Score 742 (Good)",
+          "Payment History (Last 6 months)",
+          "Mar Apr May Jun Jul Aug",
+          "DPD: 0 DPD: 0 DPD: 0 DPD: 0 DPD: 0 DPD: 0",
+          "Report generated: 25/08/2026 | Reference ID: SYN-CR-00992 31",
+          "This is a synthetically generated sample document for software testing only."
+        ]
+      }
+    }
+  },
+  {
+    "source_file": "sample_2_document_photo.png",
+    "document_type": "photo",
+    "result": {
+      "source_type": "photo",
+      "document_category": {
+        "category": "credit_report",
+        "method": "keyword_rules",
+        "confidence": 1.0,
+        "matched_phrases": [
+          "credit account details",
+          "payment status",
+          "days past due",
+          "sanctioned amount",
+          "credit score"
+        ]
+      },
+      "ocr_confidence": 87.5,
+      "fields": {
+        "account_number": "XXXXXXXX4821",
+        "account_type": "Personal Loan",
+        "lender": "Horizon Finance Bank",
+        "date_opened": "2022-03-15",
+        "sanctioned_amount": 500000.0,
+        "current_balance": 245000.0,
+        "emi_amount": 12450.0,
+        "payment_status": "Active - Current",
+        "days_past_due": 0,
+        "last_payment_date": "2026-08-01",
+        "credit_score": 742,
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "bill_to": null,
+        "subtotal": null,
+        "tax_amount": null,
+        "total_amount": null,
+        "account_holder": null,
+        "statement_period": null,
+        "opening_balance": null,
+        "closing_balance": null
+      },
+      "transactions": [],
+      "validation": {
+        "missing_required_fields": [],
+        "needs_review": false
+      },
+      "image_quality": {
+        "blur_score": 45.3,
+        "brightness": 172.3,
+        "contrast": 77.9,
+        "is_blank": false,
+        "issues": [
+          "mildly_blurred"
+        ],
+        "quality_score": 81.7,
+        "recommend_reject": false
+      },
+      "_debug": {
+        "detected_doc_type": "photo",
+        "raw_lines": [
+          "CREDIT ACCOUNT DETAILS",
+          "Account Number XXXXXXXX4821",
+          "Account Type Personal Loan",
+          "Lender Horizon Finance Bank",
+          "Date Opened 15/03/2022",
+          "Sanctioned Amount Rs 5,00,000",
+          "Current Balance Rs 2,45,000",
+          "EMI Amount Rs. 12,450",
+          "Payment Status Active - Current",
+          "Days Past Due 0",
+          "Last Payment Date 01/08/2026",
+          "Credit Score 742 (Good)",
+          "Payment History (Last 6 months)",
+          "opt t ( po DPD ¢ PD ("
+        ]
+      }
+    }
+  },
+  {
+    "source_file": "sample_3_financial_report_screenshot.png",
+    "document_type": "screenshot",
+    "result": {
+      "source_type": "screenshot",
+      "document_category": {
+        "category": "credit_report",
+        "method": "keyword_rules",
+        "confidence": 0.33,
+        "matched_phrases": [
+          "sanctioned amount"
+        ]
+      },
+      "ocr_confidence": 93.9,
+      "fields": {
+        "account_number": "XXXXXXXX4821",
+        "account_type": "Personal Loan",
+        "lender": "Horizon Finance Bank",
+        "date_opened": "2022-03-15",
+        "sanctioned_amount": 500000.0,
+        "current_balance": 245000.0,
+        "emi_amount": null,
+        "payment_status": null,
+        "days_past_due": null,
+        "last_payment_date": null,
+        "credit_score": null,
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "bill_to": null,
+        "subtotal": null,
+        "tax_amount": null,
+        "total_amount": null,
+        "account_holder": null,
+        "statement_period": null,
+        "opening_balance": null,
+        "closing_balance": null
+      },
+      "transactions": [
+        {
+          "date": "2026-08-01",
+          "description": "Salary Credit - Acme Corp",
+          "debit": null,
+          "credit": 75000.0,
+          "balance": 184320.5
+        },
+        {
+          "date": "2026-08-03",
+          "description": "EMI - Personal Loan A/c 4821",
+          "debit": 12450.0,
+          "credit": null,
+          "balance": 171870.5
+        },
+        {
+          "date": "2026-08-05",
+          "description": "UPI - Grocery Mart",
+          "debit": 2340.0,
+          "credit": null,
+          "balance": 169530.5
+        },
+        {
+          "date": "2026-08-08",
+          "description": "Interest Credit",
+          "debit": null,
+          "credit": 410.25,
+          "balance": 169940.75
+        },
+        {
+          "date": "2026-08-12",
+          "description": "ATM Withdrawal",
+          "debit": 5000.0,
+          "credit": null,
+          "balance": 164940.75
+        }
+      ],
+      "validation": {
+        "missing_required_fields": [
+          "payment_status"
+        ],
+        "needs_review": true
+      },
+      "image_quality": {
+        "blur_score": 1679.4,
+        "brightness": 230.6,
+        "contrast": 64.0,
+        "is_blank": false,
+        "issues": [],
+        "quality_score": 100.0,
+        "recommend_reject": false
+      },
+      "_debug": {
+        "detected_doc_type": "screenshot",
+        "raw_lines": [
+          "Loan Account Overview Status: Current",
+          "ACCOUNT NUMBER ACCOUNT TYPE LENDER",
+          "XXXXXXXX4821 Personal Loan Horizon Finance Bank",
+          "DATE OPENED SANCTIONED AMOUNT CURRENT BALANCE",
+          "15/03/2022 Rs. 5,00,000 Rs. 2,45,000",
+          "Recent Transactions",
+          "Date Description Debit Credit Balance",
+          "01/08/2026 Salary Credit - Acme Corp - 75,000.00 1,84,320.50",
+          "03/08/2026 EMI - Personal Loan A/c 4821 12,450.00 - 1,71,870.50",
+          "05/08/2026 UPI - Grocery Mart 2,340.00 - 1,69,530.50",
+          "08/08/2026 Interest Credit - 410.25 1,69,940.75",
+          "12/08/2026 ATM Withdrawal 5,000.00 - 1,64,940.75"
+        ]
+      }
+    }
+  },
+  {
+    "source_file": "sample_4_invoice.png",
+    "document_type": "scanned",
+    "result": {
+      "source_type": "scanned",
+      "document_category": {
+        "category": "invoice",
+        "method": "keyword_rules",
+        "confidence": 1.0,
+        "matched_phrases": [
+          "tax invoice",
+          "invoice number",
+          "invoice date",
+          "bill to",
+          "subtotal",
+          "unit price",
+          "due date"
+        ]
+      },
+      "ocr_confidence": 94.5,
+      "fields": {
+        "account_number": null,
+        "account_type": null,
+        "lender": null,
+        "date_opened": null,
+        "sanctioned_amount": null,
+        "current_balance": null,
+        "emi_amount": null,
+        "payment_status": null,
+        "days_past_due": null,
+        "last_payment_date": null,
+        "credit_score": null,
+        "invoice_number": "INV-2026-00871",
+        "invoice_date": "2026-08-20",
+        "due_date": "2026-09-04",
+        "bill_to": "Ramesh Traders, Bengaluru",
+        "subtotal": 6180.0,
+        "tax_amount": null,
+        "total_amount": 7292.0,
+        "account_holder": null,
+        "statement_period": null,
+        "opening_balance": null,
+        "closing_balance": null
+      },
+      "transactions": [],
+      "validation": {
+        "missing_required_fields": [],
+        "needs_review": false
+      },
+      "image_quality": {
+        "blur_score": 1138.4,
+        "brightness": 238.3,
+        "contrast": 57.2,
+        "is_blank": false,
+        "issues": [],
+        "quality_score": 100.0,
+        "recommend_reject": false
+      },
+      "_debug": {
+        "detected_doc_type": "scanned",
+        "raw_lines": [
+          "Acme Supplies Pvt. Ltd",
+          "TAX INVOICE",
+          "Invoice Number: INV-2026-00871",
+          "Invoice Date: 20/08/2026",
+          "Due Date: 04/09/2026",
+          "Bill To: Ramesh Traders, Bengaluru",
+          "Item Qty Unit Price Amount",
+          "Steel Bolts (Box of 100) 4 Rs. 850 Rs. 3400",
+          "Hex Nuts (Box of 100) 4 Rs. 620 Rs. 2480",
+          "Packing & Handling 1 Rs. 300 Rs. 300",
+          "Subtotal: Rs. 6180",
+          "Tax (18% GST): Rs. 1112",
+          "Total: Rs. 7292",
+          "Thank you for your business. Payment due within 15 days.",
+          "This is a synthetically generated sample document for software testing only."
+        ]
+      }
+    }
+  },
+  {
+    "source_file": "sample_5_bank_statement.png",
+    "document_type": "scanned",
+    "result": {
+      "source_type": "scanned",
+      "document_category": {
+        "category": "bank_statement",
+        "method": "keyword_rules",
+        "confidence": 1.0,
+        "matched_phrases": [
+          "account statement",
+          "opening balance",
+          "closing balance",
+          "transaction history",
+          "ifsc",
+          "statement period"
+        ]
+      },
+      "ocr_confidence": 91.6,
+      "fields": {
+        "account_number": "XXXXXXXX7734",
+        "account_type": null,
+        "lender": null,
+        "date_opened": null,
+        "sanctioned_amount": null,
+        "current_balance": null,
+        "emi_amount": null,
+        "payment_status": null,
+        "days_past_due": null,
+        "last_payment_date": null,
+        "credit_score": null,
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "bill_to": null,
+        "subtotal": null,
+        "tax_amount": null,
+        "total_amount": null,
+        "account_holder": "Priya Sharma",
+        "statement_period": "01/08/2026 to 31/08/2026",
+        "opening_balance": 184320.5,
+        "closing_balance": 164940.75
+      },
+      "transactions": [
+        {
+          "date": "2026-08-01",
+          "description": "Salary Credit - Acme Corp",
+          "debit": null,
+          "credit": 75000.0,
+          "balance": 184320.5
+        },
+        {
+          "date": "2026-08-03",
+          "description": "EMI - Personal Loan",
+          "debit": 12450.0,
+          "credit": null,
+          "balance": 171870.5
+        },
+        {
+          "date": "2026-08-05",
+          "description": "UPI - Grocery Mart",
+          "debit": 2340.0,
+          "credit": null,
+          "balance": 169530.5
+        },
+        {
+          "date": "2026-08-08",
+          "description": "Interest Credit",
+          "debit": null,
+          "credit": 410.25,
+          "balance": 169940.75
+        },
+        {
+          "date": "2026-08-12",
+          "description": "ATM Withdrawal",
+          "debit": 5000.0,
+          "credit": null,
+          "balance": 164940.75
+        },
+        {
+          "date": null,
+          "description": "HORFO001234 | Branch:",
+          "debit": null,
+          "credit": null,
+          "balance": null
+        }
+      ],
+      "validation": {
+        "missing_required_fields": [],
+        "needs_review": false
+      },
+      "image_quality": {
+        "blur_score": 1545.9,
+        "brightness": 237.5,
+        "contrast": 57.7,
+        "is_blank": false,
+        "issues": [],
+        "quality_score": 100.0,
+        "recommend_reject": false
+      },
+      "_debug": {
+        "detected_doc_type": "scanned",
+        "raw_lines": [
+          "Horizon Finance Ban",
+          "Account Statement (Sample)",
+          "Account Holder: Priya Sharma",
+          "Account Number: XXXXXXXX7734.",
+          "Statement Period: 01/08/2026 to 31/08/2026",
+          "Opening Balance: Rs. 1,84,320.50",
+          "Closing Balance: Rs. 1,64,940.75",
+          "Transaction History",
+          "Date Description Debit Credit Balance",
+          "01/08/2026 Salary Credit - Acme Corp - 75,000.00 1,84,320.50",
+          "03/08/2026 EMI - Personal Loan 12,450.00 - 1,71,870.50",
+          "05/08/2026 UPI - Grocery Mart 2,340.00 - 1,69,530.50",
+          "08/08/2026 Interest Credit - 410.25 1,69,940.75",
+          "12/08/2026 ATM Withdrawal 5,000.00 - 1,64,940.75",
+          "IFSC: HORFO001234 | Branch: MG Road, Bengaluru",
+          "This is a synthetically generated sample document for software testing only,"
+        ]
+      }
+    }
+  }
+]
