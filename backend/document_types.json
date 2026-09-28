@@ -1,0 +1,30 @@
+{
+  "invoice": {
+    "keywords": ["invoice number", "invoice date", "bill to", "due date", "amount due", "remit payment", "tax invoice"],
+    "field_hints": ["invoice_number", "invoice_date", "due_date", "amount_due", "vendor_name"]
+  },
+  "purchase_order": {
+    "keywords": ["purchase order", "po number", "po date", "ship to", "buyer"],
+    "field_hints": ["po_number", "po_date", "vendor_name", "total_amount"]
+  },
+  "bank_statement": {
+    "keywords": ["account statement", "opening balance", "closing balance", "statement period", "transaction date", "withdrawal", "deposit", "ifsc"],
+    "field_hints": ["account_number", "opening_balance", "closing_balance", "statement_period"]
+  },
+  "credit_report": {
+    "keywords": ["credit information", "cibil", "transunion", "enquiries", "days past due", "asset classification", "credit score"],
+    "field_hints": ["member_id", "account_number", "current_balance", "overdue", "sanctioned"]
+  },
+  "medical_record": {
+    "keywords": ["patient name", "diagnosis", "physician", "date of admission", "prescribed", "hospital", "symptoms"],
+    "field_hints": ["patient_name", "diagnosis", "date_of_admission", "physician"]
+  },
+  "resume": {
+    "keywords": ["work experience", "education", "skills", "objective", "curriculum vitae", "references available"],
+    "field_hints": ["name", "email", "phone", "experience"]
+  },
+  "contract": {
+    "keywords": ["this agreement", "party of the first part", "witnesseth", "governing law", "termination clause", "effective date"],
+    "field_hints": ["effective_date", "party_name", "term"]
+  }
+}
