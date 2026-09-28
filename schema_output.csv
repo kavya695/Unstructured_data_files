@@ -1,0 +1,52 @@
+document,document_type,type_confidence,field_name,field_type,source_label,occurrences,example_values
+sample.eml,credit_report,0.67,subject,string,Subject,1,Credit Account Review - Customer Reference CR-2026-10482
+sample.eml,credit_report,0.67,from,string,From,1,credit.operations@examplebank.com
+sample.eml,credit_report,0.67,date,string,Date,1,"Thu, 10"
+sample.eml,credit_report,0.67,customer_name,string,Customer Name,1,Ananya Rao
+sample.eml,credit_report,0.67,customer_reference_number,string,Customer Reference Number,1,CR-2026-10482
+sample.eml,credit_report,0.67,date_of_birth,date,Date of Birth,1,14-06-1988
+sample.eml,credit_report,0.67,gender,string,Gender,1,FEMALE
+sample.eml,credit_report,0.67,pan,string,PAN,1,SAMPLEP1234A
+sample.eml,credit_report,0.67,employment_type,string,Employment Type,1,SALARIED
+sample.eml,credit_report,0.67,account_number,string,Account Number,1,XXXX4521
+sample.eml,credit_report,0.67,account_type,string,Account Type,1,PERSONAL LOAN
+sample.eml,credit_report,0.67,member_name,string,Member Name,1,Example Bank
+sample.eml,credit_report,0.67,ownership,string,Ownership,1,INDIVIDUAL
+sample.eml,credit_report,0.67,date_opened,date,Date Opened,1,12-03-2022
+sample.eml,credit_report,0.67,last_payment_date,date,Last Payment Date,1,05-08-2026
+sample.eml,credit_report,0.67,current_balance,number,Current Balance,1,185000
+sample.eml,credit_report,0.67,overdue_amount,number,Overdue Amount,1,0
+sample.eml,credit_report,0.67,status,string,Status,1,STD
+sample.eml,credit_report,0.67,enquiry_reference,string,Enquiry Reference,1,ENQ-2026-7781
+sample.eml,credit_report,0.67,enquiry_date,date,Enquiry Date,1,22-08-2026
+sample.eml,credit_report,0.67,enquiry_purpose,string,Enquiry Purpose,1,PERSONAL LOAN
+sample.eml,credit_report,0.67,enquiring_member,string,Enquiring Member,1,Example Bank
+test.pdf,credit_report,0.8,consumer_borrower,string,CONSUMER/BORROWER,2,PRABHU; PRABHU KABALI
+test.pdf,credit_report,0.8,kabali_date,date,KABALI DATE,1,12-10-2006
+test.pdf,credit_report,0.8,member_id,string,MEMBER ID,2,BP00340001 (IMAGINARY; BP00340001
+test.pdf,credit_report,0.8,member_reference_number,string,MEMBER REFERENCE NUMBER,2,BB-ENQ01; BB-ENQ01
+test.pdf,credit_report,0.8,control_number,number,CONTROL NUMBER,2,"295,360,133; 295,360,133"
+test.pdf,credit_report,0.8,name,string,NAME,1,PRABHU KABALI
+test.pdf,credit_report,0.8,date_of_birth,string,DATE OF BIRTH,1,16-08-1976 55332211
+test.pdf,credit_report,0.8,income_tax_id,string,INCOME TAX ID,1,AMYFK0228P
+test.pdf,credit_report,0.8,gender,string,GENDER,1,MALE 52951
+test.pdf,credit_report,0.8,all_accounts_total,string,All Accounts TOTAL,1,3 HIGH CR/SANC.
+test.pdf,credit_report,0.8,amt,number,AMT,1,"78,000"
+test.pdf,credit_report,0.8,current,number,CURRENT,1,6431
+test.pdf,credit_report,0.8,recent,date,RECENT,1,18-3-2005
+test.pdf,credit_report,0.8,overdue,number,OVERDUE,5,2; 6431; 0
+test.pdf,credit_report,0.8,oldest,date,OLDEST,1,03-02-2001
+test.pdf,credit_report,0.8,balance,number,BALANCE,1,1
+test.pdf,credit_report,0.8,member_name,string,MEMBER NAME,3,NOT; IMAGINARY BANK; NOT DISCLOSED
+test.pdf,credit_report,0.8,disclosed_opened,date,DISCLOSED OPENED,1,10-01-2001
+test.pdf,credit_report,0.8,sanctioned,string,SANCTIONED,2,"16,000 Written Off; 27,000"
+test.pdf,credit_report,0.8,account_number,string,ACCOUNT NUMBER,3,NOT DISCLOSED _; RKP514; NOT DISCLOSED
+test.pdf,credit_report,0.8,last_payment,date,LAST PAYMENT,3,10-01-2005; 29-06-2004; 28-06-2002
+test.pdf,credit_report,0.8,current_balance,number,CURRENT BALANCE,3,"0; 5,197; 1,234"
+test.pdf,credit_report,0.8,type,string,TYPE,3,AUTO; CONSUMER LOAN; CREDIT CARD
+test.pdf,credit_report,0.8,loan_closed,date,LOAN CLOSED,1,24-12-2004
+test.pdf,credit_report,0.8,ownership,string,OWNERSHIP,3,INDIVIDUAL; INDIVIDUAL; INDIVIDUAL
+test.pdf,credit_report,0.8,reported,date,REPORTED,3,15-02-2005; 15-03-2002; 18-03-2005
+test.pdf,credit_report,0.8,opened,date,OPENED,2,10-07-2001; 10-06-2001
+test.pdf,credit_report,0.8,high_credit,number,HIGH CREDIT,1,"35,000"
+test.pdf,credit_report,0.8,date,date,DATE,1,12-10-2006
