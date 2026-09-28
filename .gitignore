@@ -1,0 +1,8 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+ocr_pipeline_uploads/
+frontend/ocr_pipeline_uploads/
+*.log

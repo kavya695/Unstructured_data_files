@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Intelligence</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M16 18h18l14 14-14 14H16l14-14-14-14zm22 0h10v28H38z' fill='%23e2e8f0'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='11') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">DI</div>
+        <div>
+          <div class="brand">Document Intelligence</div>
+          <div class="brand-sub">Unstructured Data</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">DOCUMENT INTELLIGENCE</div>
+          <h1>Turn unstructured documents into <span>trusted data.</span></h1>
+          <p class="subtitle">Upload a scanned document, photo, or screenshot. The processing engine analyzes quality, runs OCR, classifies the document, extracts fields, and validates the result.</p>
+        </div>
+      </section>
+
+      <section class="card upload-card" id="upload-card">
+        <div class="section-heading">
+          <div>
+            <h2>Upload document</h2>
+            <p>Start with a PDF, scan, photo, or screenshot.</p>
+          </div>
+          <div class="file-types"><span>PDF</span><span>PNG</span><span>JPG</span><span>TIFF</span></div>
+        </div>
+
+        <label for="file-input" class="dropzone" id="dropzone">
+          <div class="upload-icon">↥</div>
+          <img id="preview" alt="Document preview" hidden>
+          <div id="dropzone-text">
+            <strong>Drag & drop your document here</strong>
+            <span>or <u>browse files</u> from your computer</span>
+            <small>Maximum file size: 15 MB</small>
+          </div>
+          <div id="file-name" class="file-name" hidden></div>
+        </label>
+        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff" hidden>
+
+        <div class="selected-file" id="selected-file" hidden>
+          <div class="file-icon">DOC</div>
+          <div class="selected-meta"><strong id="selected-name"></strong><span id="selected-size"></span></div>
+          <button id="replace-btn" class="ghost-btn" type="button">Replace</button>
+        </div>
+
+        <div class="controls">
+          <button id="submit-btn" class="primary-btn" disabled><span>Extract structured data</span><b>→</b></button>
+        </div>
+        <p id="error" class="error" hidden></p>
+      </section>
+
+      <section class="card pipeline-card" id="pipeline-card" hidden>
+        <div class="section-heading compact">
+          <div><h2>Processing pipeline</h2><p>From raw document to validated structured data.</p></div>
+          <span id="pipeline-status" class="processing-pill">PROCESSING</span>
+        </div>
+        <div class="pipeline" id="pipeline">
+          <div class="pipe-step active" data-step="quality"><span class="pipe-icon">01</span><strong>Quality</strong><small>Image analysis</small></div>
+          <div class="pipe-line"></div>
+          <div class="pipe-step" data-step="ocr"><span class="pipe-icon">02</span><strong>OCR</strong><small>Text recognition</small></div>
+          <div class="pipe-line"></div>
+          <div class="pipe-step" data-step="classify"><span class="pipe-icon">03</span><strong>Classify</strong><small>Document type</small></div>
+          <div class="pipe-line"></div>
+          <div class="pipe-step" data-step="extract"><span class="pipe-icon">04</span><strong>Extract</strong><small>Business fields</small></div>
+          <div class="pipe-line"></div>
+          <div class="pipe-step" data-step="validate"><span class="pipe-icon">05</span><strong>Validate</strong><small>Trust checks</small></div>
+        </div>
+      </section>
+
+      <section class="card results-card" id="results-card" hidden>
+        <div id="loading" hidden>
+          <div class="spinner"></div><span>Processing document…</span>
+        </div>
+
+        <div id="results" hidden>
+          <div class="results-title-row">
+            <div>
+              <div class="eyebrow">EXTRACTION COMPLETE</div>
+              <h2>Document intelligence results</h2>
+              <p>Review the extracted information and validation signals below.</p>
+            </div>
+            <span class="review-badge" id="review-badge"></span>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric"><span>DOCUMENT TYPE</span><strong id="category-metric">—</strong><small id="detected-type-metric">Detected capture type —</small></div>
+            <div class="metric"><span>OCR CONFIDENCE</span><strong id="confidence-metric">—</strong><div class="progress"><i id="confidence-bar"></i></div></div>
+            <div class="metric"><span>VALIDATION</span><strong id="validation-metric">—</strong><small id="quality-metric">Quality signals —</small></div>
+          </div>
+
+          <p id="quality-warning" class="quality-warning" hidden></p>
+
+          <div class="result-grid">
+            <div class="document-panel">
+              <div class="panel-title"><span>Original document</span><small id="result-file-name">Uploaded file</small></div>
+              <div class="document-preview" id="result-preview"><div class="preview-placeholder"><span>DOC</span><p>Document preview</p></div></div>
+            </div>
+          </div>
+
+          <div class="quality-panel">
+            <div class="panel-title"><span>Document quality</span><small>Pre-OCR analysis</small></div>
+            <div class="quality-grid">
+              <div><span>Resolution</span><b id="quality-resolution">✓ Good</b></div>
+              <div><span>Brightness</span><b id="quality-brightness">✓ Good</b></div>
+              <div><span>Blur / noise</span><b id="quality-blur">✓ Good</b></div>
+              <div><span>Overall</span><b id="quality-overall">✓ Ready</b></div>
+            </div>
+          </div>
+
+          <div id="transactions-block" class="transactions-panel" hidden>
+            <div class="panel-title"><span>Transactions</span><small id="transaction-count">0 records</small></div>
+            <div class="table-scroll"><table id="transactions-table"><thead><tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead><tbody id="transactions-body"></tbody></table></div>
+          </div>
+
+          <div id="csv-extracted-section" class="csv-extracted-section" hidden>
+            <div class="csv-section-header">
+              <div>
+                <div class="csv-section-title"><span class="csv-icon">CSV</span><span>Extracted Information</span></div>
+                <p>Structured business data extracted from the document.</p>
+              </div>
+            </div>
+            <div class="csv-table-scroll">
+              <table id="csv-extracted-table" class="csv-extracted-table"><thead id="csv-extracted-head"></thead><tbody id="csv-extracted-body"></tbody></table>
+            </div>
+            <div class="csv-download-bar">
+              <div><span class="csv-download-icon">CSV</span><span>CSV file will be downloaded with the above structured data.</span></div>
+              <button id="download-csv-btn" class="secondary-btn" type="button">↓ Download CSV</button>
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button id="reset-btn" class="primary-btn" type="button">Process another document <b>→</b></button>
+        </div>
+      </section>
+
+      <section class="card history-card" id="history-card" hidden>
+        <div class="history-header"><div><h2>Recent extractions</h2><p>Your last 10 results are stored locally in this browser.</p></div><button id="clear-history-btn" class="text-btn" type="button">Clear history</button></div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+
+    <footer>Document Intelligence · Unstructured Data</footer>
+  </div>
+  <script src="{{ url_for('static', filename='script.js', v='11') }}"></script>
+  <!-- Document View Popup -->
+<div
+    id="documentViewModal"
+    class="document-view-modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="documentViewTitle"
+>
+    <div class="document-view-modal-content">
+
+        <div class="document-view-modal-header">
+
+            <div class="document-view-modal-title">
+                <strong id="documentViewTitle">
+                    Document Preview
+                </strong>
+
+                <span id="documentViewSubtitle">
+                    Extracted document information
+                </span>
+            </div>
+
+            <button
+                type="button"
+                id="documentViewClose"
+                class="document-view-close"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            id="documentViewBody"
+            class="document-view-modal-body"
+        ></div>
+
+    </div>
+</div>
+</body>
+</html>
