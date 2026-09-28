@@ -30,6 +30,7 @@ let selectedFile=null,
 currentResult=null,
 selectedPreviewUrl=null,
 currentDocumentName="",
+currentHistoryId="",
 selectedHistoryIds=[];
 
 const HISTORY_KEY="ocr-extraction-history",
@@ -52,9 +53,10 @@ function loadHistory(){
 
 function saveHistory(result,name,previewDataUrl){
     const h=loadHistory();
+    const historyId=`${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
     h.unshift({
-        id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id:historyId,
         name,
         createdAt:new Date().toISOString(),
         previewDataUrl,
@@ -72,7 +74,8 @@ function saveHistory(result,name,previewDataUrl){
         showError("Extraction succeeded, but browser history could not be saved.");
     }
 
-    selectedHistoryIds=savedHistory.map(item=>item.id||"");
+    selectedHistoryIds=[];
+    currentHistoryId=historyId;
     renderHistory();
     renderCsvExtractedTable(result);
 }
@@ -171,6 +174,7 @@ function openHistoryItem(item){
     };
 
     currentDocumentName=item.name||"Saved document";
+    currentHistoryId=item.id||"";
     selectedPreviewUrl=item.previewDataUrl||null;
     currentResult=item.result;
 
@@ -231,6 +235,10 @@ function toggleHistorySelection(item){
                     .map(x=>(x.name||"").trim().toLowerCase())
             );
 
+        if(currentResult&&currentDocumentName){
+            selectedNames.add(currentDocumentName.trim().toLowerCase());
+        }
+
         if(!selectedNames.has(nameKey)){
             selectedHistoryIds=[
                 ...new Set([
@@ -260,6 +268,7 @@ function removeHistoryItem(item){
         (item.name||item.file_name||"")
     ){
         currentResult=null;
+        currentHistoryId="";
     }
 
     localStorage.setItem(
@@ -1307,51 +1316,28 @@ function csvRowData(result){
 
 function getCsvTableDataFromSelection(){
 
-    const selectedItems=
-        getSelectedHistoryItems();
-
-    if(selectedItems.length){
-
-        const rows=
-            selectedItems.map(
-                item=>({
-                    source_file:
-                        item.name||"document",
-                    ...(item.result&&item.result.fields
-                        ?item.result.fields
-                        :{})
-                })
-            );
-
-        const headers=
-            Array.from(
-                new Set(
-                    rows.flatMap(
-                        row=>Object.keys(row)
-                    )
-                )
-            );
-
-        return{
-            headers,
-            rows
-        };
-    }
+    const currentNameKey=currentDocumentName.trim().toLowerCase();
+    const selectedItems=getSelectedHistoryItems().filter(item=>
+        (item.id||"")!==currentHistoryId&&
+        (!currentResult||
+            (item.name||"").trim().toLowerCase()!==currentNameKey)
+    );
+    const rows=[];
 
     if(currentResult){
-
-        const row=
-            csvRowData(currentResult);
-
-        return{
-            headers:Object.keys(row),
-            rows:[row]
-        };
+        rows.push(csvRowData(currentResult));
     }
 
+    rows.push(...selectedItems.map(item=>({
+        source_file:item.name||"document",
+        ...(item.result&&item.result.fields
+            ?item.result.fields
+            :{})
+    })));
+
     return{
-        headers:[],
-        rows:[]
+        headers:Array.from(new Set(rows.flatMap(row=>Object.keys(row)))),
+        rows
     };
 }
 
@@ -1595,6 +1581,7 @@ function resetForm(){
 
     selectedFile=null;
     currentResult=null;
+    currentHistoryId="";
     selectedHistoryIds=[];
 
     fileInput.value="";
@@ -1681,6 +1668,13 @@ submitBtn.onclick=async()=>{
             await createHistoryPreview(
                 selectedFile
             );
+
+        if(
+            selectedFile.type==="application/pdf"||
+            selectedFile.name.toLowerCase().endsWith(".pdf")
+        ){
+            selectedPreviewUrl=historyPreview;
+        }
 
         renderResults(data);
 

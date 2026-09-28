@@ -30,6 +30,7 @@ let selectedFile=null,
 currentResult=null,
 selectedPreviewUrl=null,
 currentDocumentName="",
+currentHistoryId="",
 selectedHistoryIds=[],
 csvHistoryIds=[],
 pendingFileName="";
@@ -75,9 +76,10 @@ function loadHistory(){
 
 function saveHistory(result,name,previewDataUrl){
     const h=loadHistory();
+    const historyId=`${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
     h.unshift({
-        id:`${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id:historyId,
         name,
         createdAt:new Date().toISOString(),
         previewDataUrl,
@@ -95,9 +97,12 @@ function saveHistory(result,name,previewDataUrl){
         showError("Extraction succeeded, but browser history could not be saved.");
     }
 
-    selectedHistoryIds=savedHistory.map(item=>item.id||"");
+    selectedHistoryIds=[];
+    csvHistoryIds=[];
+    currentHistoryId=historyId;
     pendingFileName="";
     renderHistory();
+    updateAddSelectedButton();
     renderCsvExtractedTable(result);
 }
 
@@ -195,6 +200,7 @@ function openHistoryItem(item){
     };
 
     currentDocumentName=item.name||"Saved document";
+    currentHistoryId=item.id||"";
     selectedPreviewUrl=item.previewDataUrl||null;
     currentResult=item.result;
 
@@ -255,6 +261,10 @@ function toggleHistorySelection(item){
                     .map(x=>(x.name||"").trim().toLowerCase())
             );
 
+        if(currentResult&&currentDocumentName){
+            selectedNames.add(currentDocumentName.trim().toLowerCase());
+        }
+
         if(!selectedNames.has(nameKey)){
             selectedHistoryIds=[
                 ...new Set([
@@ -265,8 +275,10 @@ function toggleHistorySelection(item){
         }
     }
 
+    csvHistoryIds=[...selectedHistoryIds];
     updateAddSelectedButton();
     renderHistory();
+    renderCsvExtractedTable(currentResult||null);
 }
 
 function removeHistoryItem(item){
@@ -284,6 +296,7 @@ function removeHistoryItem(item){
         (item.name||item.file_name||"")
     ){
         currentResult=null;
+        currentHistoryId="";
     }
 
     localStorage.setItem(
@@ -438,6 +451,7 @@ function viewHistoryItem(item) {
 
     // Store the currently opened document
     currentDocumentName = item.name || item.file_name || "Document";
+    currentHistoryId = item.id || "";
     currentResult = item.result;
 
     // Set popup title
@@ -1337,51 +1351,29 @@ function getCsvTableDataFromSelection(){
 
     const csvIds=new Set(csvHistoryIds);
     const selectedItems=loadHistory().filter(
-        item=>csvIds.has(item.id||"")
+        item=>csvIds.has(item.id||"")&&
+            (item.id||"")!==currentHistoryId&&
+            (!currentResult||
+                (item.name||"").trim().toLowerCase()!==
+                currentDocumentName.trim().toLowerCase())
     );
 
-    if(selectedItems.length){
-
-        const rows=
-            selectedItems.map(
-                item=>({
-                    source_file:
-                        item.name||"document",
-                    ...(item.result&&item.result.fields
-                        ?item.result.fields
-                        :{})
-                })
-            );
-
-        const headers=
-            Array.from(
-                new Set(
-                    rows.flatMap(
-                        row=>Object.keys(row)
-                    )
-                )
-            );
-
-        return{
-            headers,
-            rows
-        };
-    }
+    const rows=[];
 
     if(currentResult){
-
-        const row=
-            csvRowData(currentResult);
-
-        return{
-            headers:Object.keys(row),
-            rows:[row]
-        };
+        rows.push(csvRowData(currentResult));
     }
 
+    rows.push(...selectedItems.map(item=>({
+        source_file:item.name||"document",
+        ...(item.result&&item.result.fields
+            ?item.result.fields
+            :{})
+    })));
+
     return{
-        headers:[],
-        rows:[]
+        headers:Array.from(new Set(rows.flatMap(row=>Object.keys(row)))),
+        rows
     };
 }
 
@@ -1625,6 +1617,7 @@ function resetForm(){
 
     selectedFile=null;
     currentResult=null;
+    currentHistoryId="";
     selectedHistoryIds=[];
     csvHistoryIds=[];
     pendingFileName="";
@@ -1713,6 +1706,13 @@ submitBtn.onclick=async()=>{
             await createHistoryPreview(
                 selectedFile
             );
+
+        if(
+            selectedFile.type==="application/pdf"||
+            selectedFile.name.toLowerCase().endsWith(".pdf")
+        ){
+            selectedPreviewUrl=historyPreview;
+        }
 
         renderResults(data);
 
