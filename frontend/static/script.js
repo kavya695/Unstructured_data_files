@@ -1,3 +1,6 @@
+import {renderPipeline as renderPipelineSteps} from "./pipeline.js";
+import {createHistoryPreview,createTextDocumentPreview} from "./document-preview.js";
+
 const fileInput=document.getElementById("file-input"),
 dropzone=document.getElementById("dropzone"),
 dropzoneText=document.getElementById("dropzone-text"),
@@ -29,6 +32,9 @@ resultFileName=document.getElementById("result-file-name");
 let selectedFile=null,
 currentResult=null,
 selectedPreviewUrl=null,
+selectedProcessingType="image",
+pdfDetectionRequest=0,
+pdfTypeChecking=false,
 currentDocumentName="",
 currentHistoryId="",
 selectedHistoryIds=[],
@@ -36,7 +42,8 @@ csvHistoryIds=[],
 pendingFileName="";
 
 const HISTORY_KEY="ocr-extraction-history",
-MAX_HISTORY_ITEMS=10;
+MAX_HISTORY_ITEMS=10,
+MAX_HISTORY_STORAGE_CHARS=2*1024*1024;
 
 const $=id=>document.getElementById(id);
 
@@ -49,15 +56,22 @@ function updateAddSelectedButton(){
     if(button)button.disabled=!getSelectedHistoryItems().length;
 }
 
+function syncHistoryCsvVisibility(){
+    const hasCsvContent=!csvExtractedSection.hidden;
+    const showCsvOnly=!currentResult&&hasCsvContent;
+
+    resultsEl.classList.toggle("csv-history-only",showCsvOnly);
+    resultsCard.hidden=!currentResult&&!hasCsvContent;
+    resultsEl.hidden=!currentResult&&!hasCsvContent;
+}
+
 function addSelectedToCurrentCsv(){
     csvHistoryIds=[...new Set([
         ...csvHistoryIds,
         ...getSelectedHistoryItems().map(item=>item.id||"")
     ])];
     renderCsvExtractedTable(currentResult||null);
-    resultsCard.hidden=false;
-    resultsEl.hidden=false;
-    csvExtractedSection.hidden=false;
+    syncHistoryCsvVisibility();
     csvExtractedSection.scrollIntoView({
         behavior:"smooth",
         block:"center"
@@ -74,6 +88,46 @@ function loadHistory(){
     }
 }
 
+function persistHistory(history){
+    const storedHistory=history.map(item=>({...item}));
+    let previewsTrimmed=false;
+    let entriesTrimmed=false;
+
+    while(storedHistory.length){
+        const serialized=JSON.stringify(storedHistory);
+
+        if(serialized.length<=MAX_HISTORY_STORAGE_CHARS){
+            try{
+                localStorage.setItem(HISTORY_KEY,serialized);
+                return{
+                    saved:true,
+                    trimmed:previewsTrimmed||entriesTrimmed
+                };
+            }catch{}
+        }
+
+        let previewIndex=-1;
+        for(let index=storedHistory.length-1;index>=0;index--){
+            if(storedHistory[index].previewDataUrl){
+                previewIndex=index;
+                break;
+            }
+        }
+
+        if(previewIndex>=0){
+            delete storedHistory[previewIndex].previewDataUrl;
+            previewsTrimmed=true;
+        }else if(storedHistory.length>1){
+            storedHistory.pop();
+            entriesTrimmed=true;
+        }else{
+            return{saved:false,trimmed:previewsTrimmed||entriesTrimmed};
+        }
+    }
+
+    return{saved:false,trimmed:previewsTrimmed||entriesTrimmed};
+}
+
 function saveHistory(result,name,previewDataUrl){
     const h=loadHistory();
     const historyId=`${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -88,13 +142,11 @@ function saveHistory(result,name,previewDataUrl){
 
     const savedHistory=h.slice(0,MAX_HISTORY_ITEMS);
 
-    try{
-        localStorage.setItem(
-            HISTORY_KEY,
-            JSON.stringify(savedHistory)
-        );
-    }catch{
-        showError("Extraction succeeded, but browser history could not be saved.");
+    const storageResult=persistHistory(savedHistory);
+    if(!storageResult.saved){
+        showError("Extraction succeeded, but browser storage is full; this result was not saved to history.");
+    }else if(storageResult.trimmed){
+        console.warn("Browser history was full; older previews or entries were removed to save this result.");
     }
 
     selectedHistoryIds=[];
@@ -113,72 +165,6 @@ function formatHistoryDate(v){
         :d.toLocaleString();
 }
 
-function createHistoryPreview(file){
-    return new Promise(resolve=>{
-        const isPdf=
-            file.type==="application/pdf" ||
-            file.name.toLowerCase().endsWith(".pdf");
-
-        if(isPdf&&file.size>3*1024*1024){
-            resolve(null);
-            return;
-        }
-
-        const reader=new FileReader();
-
-        reader.onload=()=>{
-            if(isPdf){
-                resolve(reader.result);
-                return;
-            }
-
-            const img=new Image();
-
-            img.onload=()=>{
-                const scale=Math.min(
-                    1,
-                    1000/Math.max(
-                        img.naturalWidth,
-                        img.naturalHeight
-                    )
-                );
-
-                const canvas=document.createElement("canvas");
-
-                canvas.width=Math.max(
-                    1,
-                    Math.round(img.naturalWidth*scale)
-                );
-
-                canvas.height=Math.max(
-                    1,
-                    Math.round(img.naturalHeight*scale)
-                );
-
-                canvas
-                    .getContext("2d")
-                    .drawImage(
-                        img,
-                        0,
-                        0,
-                        canvas.width,
-                        canvas.height
-                    );
-
-                resolve(
-                    canvas.toDataURL("image/jpeg",.78)
-                );
-            };
-
-            img.onerror=()=>resolve(null);
-            img.src=reader.result;
-        };
-
-        reader.onerror=()=>resolve(null);
-        reader.readAsDataURL(file);
-    });
-}
-
 function openHistoryItem(item){
 
     if(!selectedHistoryIds.includes(item.id||"")){
@@ -192,9 +178,10 @@ function openHistoryItem(item){
 
     selectedFile={
         name:item.name||"Saved document",
-        type:
-            item.previewDataUrl &&
-            item.previewDataUrl.startsWith("data:application/pdf")
+        type:item.name&&item.name.toLowerCase().endsWith(".txt")
+            ?"text/plain"
+            :item.previewDataUrl&&
+                item.previewDataUrl.startsWith("data:application/pdf")
                 ?"application/pdf"
                 :"image/jpeg"
     };
@@ -279,6 +266,7 @@ function toggleHistorySelection(item){
     updateAddSelectedButton();
     renderHistory();
     renderCsvExtractedTable(currentResult||null);
+    syncHistoryCsvVisibility();
 }
 
 function removeHistoryItem(item){
@@ -299,13 +287,15 @@ function removeHistoryItem(item){
         currentHistoryId="";
     }
 
-    localStorage.setItem(
-        HISTORY_KEY,
-        JSON.stringify(history)
-    );
+    const storageResult=persistHistory(history);
+    if(!storageResult.saved){
+        showError("Could not update browser history because storage is full.");
+        return;
+    }
 
     renderHistory();
     renderCsvExtractedTable(currentResult||null);
+    syncHistoryCsvVisibility();
 }
 
 function renderHistory(){
@@ -358,6 +348,10 @@ function renderHistory(){
         checkBtn.setAttribute(
             "aria-label",
             `Select ${item.name||"document"}`
+        );
+        checkBtn.setAttribute(
+            "aria-pressed",
+            String(selectedHistoryIds.includes(item.id||""))
         );
 
         checkBtn.textContent=
@@ -443,6 +437,7 @@ function viewHistoryItem(item) {
     const modalTitle = document.getElementById("documentViewTitle");
     const modalSubtitle = document.getElementById("documentViewSubtitle");
     const modalBody = document.getElementById("documentViewBody");
+    const returnFocus = document.activeElement;
 
     if (!modal || !modalBody) {
         console.error("Document view modal not found.");
@@ -468,10 +463,17 @@ function viewHistoryItem(item) {
     const previewIsPdf =
         item.previewDataUrl &&
         item.previewDataUrl.startsWith("data:application/pdf");
+    const previewIsText=
+        currentDocumentName.toLowerCase().endsWith(".txt")||
+        item.previewDataUrl&&item.previewDataUrl.startsWith("data:text/plain");
 
     selectedFile = {
         name: currentDocumentName,
-        type: previewIsPdf ? "application/pdf" : "image/jpeg"
+        type: previewIsText
+            ?"text/plain"
+            :previewIsPdf
+                ?"application/pdf"
+                :"image/jpeg"
     };
     selectedPreviewUrl = item.previewDataUrl || null;
 
@@ -505,6 +507,14 @@ function viewHistoryItem(item) {
         existingCsvSection.remove();
     }
 
+    // Remove the reset action from the popup clone so the modal only shows content
+    const existingResetAction =
+        clonedResults.querySelector(".result-actions");
+
+    if (existingResetAction) {
+        existingResetAction.remove();
+    }
+
     // Create CSV section only for the selected document
     const singleDocumentCsvSection =
         createSingleDocumentCsvSection(item);
@@ -527,11 +537,50 @@ function viewHistoryItem(item) {
     const closeButton =
         document.getElementById("documentViewClose");
 
+    const closeModal = () => {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+        if (returnFocus && typeof returnFocus.focus === "function") {
+            returnFocus.focus();
+        }
+    };
+
+    modal.onkeydown = event => {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeModal();
+            return;
+        }
+
+        if (event.key !== "Tab") {
+            return;
+        }
+
+        const focusable = Array.from(modal.querySelectorAll(
+            'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )).filter(element => element.offsetParent !== null);
+
+        if (!focusable.length) {
+            event.preventDefault();
+            closeButton?.focus();
+            return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    };
+
     if (closeButton) {
-        closeButton.onclick = () => {
-            modal.classList.add("hidden");
-            document.body.style.overflow = "";
-        };
+        closeButton.onclick = closeModal;
+        closeButton.focus();
     }
 }
 
@@ -807,7 +856,7 @@ function sanitizeFileName(name) {
    ========================================================= */
 
 function updateSubmitState(){
-    submitBtn.disabled=!selectedFile;
+    submitBtn.disabled=!selectedFile||pdfTypeChecking;
 }
 
 function showError(m){
@@ -826,27 +875,127 @@ function formatSize(bytes){
         :`${(bytes/1024/1024).toFixed(1)} MB`;
 }
 
+function getProcessingType(file){
+    const extension=file&&file.name.toLowerCase().split(".").pop();
+    if(extension==="pdf"&&file===selectedFile){
+        return selectedProcessingType;
+    }
+    return extension==="txt"||file&&file.type==="text/plain"
+        ?"text"
+        :"image";
+}
+
+async function readApiJson(response,operation){
+    const contentType=response.headers.get("content-type")||"";
+    if(!contentType.toLowerCase().includes("application/json")){
+        throw new Error(
+            `${operation} returned HTTP ${response.status} without JSON. Restart Flask and reload this page.`
+        );
+    }
+
+    try{
+        return await response.json();
+    }catch{
+        throw new Error(
+            `${operation} returned invalid JSON. Restart Flask and reload this page.`
+        );
+    }
+}
+
+async function detectPdfProcessingType(file,requestId){
+    const formData=new FormData();
+    formData.append("file",file);
+    let detectionFailed=false;
+
+    try{
+        const response=await fetch("/api/processing-type",{
+            method:"POST",
+            body:formData
+        });
+        const result=await readApiJson(response,"PDF type detection");
+
+        if(!response.ok){
+            throw new Error(result.error||"Could not inspect this PDF.");
+        }
+
+        if(selectedFile!==file||requestId!==pdfDetectionRequest){
+            return;
+        }
+
+        selectedProcessingType=result.processing_type;
+    }catch(error){
+        if(selectedFile!==file||requestId!==pdfDetectionRequest){
+            return;
+        }
+        selectedProcessingType="image";
+        detectionFailed=true;
+        showError(error.message||"Could not inspect this PDF.");
+    }finally{
+        if(selectedFile===file&&requestId===pdfDetectionRequest){
+            pdfTypeChecking=false;
+            dropzone.classList.toggle(
+                "text-mode",
+                selectedProcessingType==="text"
+            );
+            setPipelineState("ready",selectedProcessingType);
+            updateSubmitState();
+
+            if(selectedProcessingType==="text"){
+                dropzoneText.innerHTML=
+                    `<strong>Text PDF selected</strong>
+                     <span>${file.name}</span>
+                     <small>Selectable text detected</small>`;
+            }else{
+                dropzoneText.innerHTML=
+                    `<strong>${detectionFailed?"PDF inspection unavailable":"Scanned PDF selected"}</strong>
+                     <span>${file.name}</span>
+                     <small>${detectionFailed?"Using image/OCR processing":"No selectable text found; OCR will be used"}</small>`;
+            }
+        }
+    }
+}
+
 function setFile(file){
 
     selectedFile=file;
     pendingFileName=file.name;
 
+    const isTextFile=file.type==="text/plain"||
+        file.name.toLowerCase().endsWith(".txt");
+    const isPdf=
+        file.type==="application/pdf"||
+        file.name.toLowerCase().endsWith(".pdf");
+
+    pdfDetectionRequest++;
+    pdfTypeChecking=isPdf;
+    selectedProcessingType=isTextFile?"text":"image";
     updateSubmitState();
     clearError();
 
     selectedName.textContent=file.name;
 
     selectedSize.textContent=
-        `${file.type||"Document"} · ${formatSize(file.size)}`;
+        `${file.type|| (isTextFile ? "Text file" : "Document")} · ${formatSize(file.size)}`;
 
     selectedFileEl.hidden=false;
 
-    const isPdf=
-        file.type==="application/pdf" ||
-        file.name.toLowerCase().endsWith(".pdf");
-
     if(selectedPreviewUrl){
         URL.revokeObjectURL(selectedPreviewUrl);
+    }
+    selectedPreviewUrl=null;
+
+    dropzone.classList.toggle("text-mode", isTextFile);
+    pipelineCard.hidden=false;
+    setPipelineState("ready",selectedProcessingType);
+
+    if(isTextFile){
+        preview.hidden=true;
+        dropzoneText.hidden=false;
+        dropzoneText.innerHTML=
+            `<strong>Text file selected</strong>
+             <span>${file.name}</span>
+             <small>Plain text ready for processing</small>`;
+        return;
     }
 
     if(isPdf){
@@ -858,7 +1007,9 @@ function setFile(file){
         dropzoneText.innerHTML=
             `<strong>Document selected</strong>
              <span>${file.name}</span>
-             <small>PDF ready for processing</small>`;
+             <small>Checking for selectable text…</small>`;
+
+        detectPdfProcessingType(file,pdfDetectionRequest);
 
     }else{
 
@@ -914,80 +1065,57 @@ dropzone.ondrop=e=>{
    PIPELINE
    ========================================================= */
 
-function humanizeKey(key){
+let pipelineState = "ready";
+
+
+/* =========================================================
+   HUMANIZE PIPELINE KEYS
+   ========================================================= */
+
+function humanizeKey(key) {
+
     return key
         .split("_")
         .map(
-            w=>w.charAt(0).toUpperCase()+w.slice(1)
+            word =>
+                word.charAt(0).toUpperCase() +
+                word.slice(1)
         )
         .join(" ");
 }
 
-function setPipeline(stage){
 
-    const order=[
-        "quality",
-        "ocr",
-        "classify",
-        "extract",
-        "validate"
-    ];
+/* =========================================================
+   RENDER PIPELINE
+   ========================================================= */
 
-    const idx=order.indexOf(stage);
-
-    document
-        .querySelectorAll(".pipe-step")
-        .forEach((el,i)=>{
-            el.classList.toggle(
-                "active",
-                i===idx
-            );
-
-            el.classList.toggle(
-                "done",
-                i<idx
-            );
-        });
-
-    document
-        .querySelectorAll(".pipe-line")
-        .forEach((el,i)=>{
-            el.classList.toggle(
-                "done",
-                i<idx
-            );
-        });
-
-    pipelineStatus.textContent=
-        stage==="validate"
-            ?"VALIDATED"
-            :"PROCESSING";
+function renderPipeline(processingType=getProcessingType(selectedFile)){
+    renderPipelineSteps({
+        pipeline:$("pipeline"),
+        status:pipelineStatus,
+        subtitle:$("pipeline-subtitle"),
+        processingType,
+        state:pipelineState
+    });
 }
 
-async function animatePipeline(){
 
-    pipelineCard.hidden=false;
+/* =========================================================
+   SET PIPELINE STATE
+   ========================================================= */
 
-    const steps=[
-        "quality",
-        "ocr",
-        "classify",
-        "extract",
-        "validate"
-    ];
+function setPipelineState(
+    state,
+    processingType
+) {
 
-    for(const step of steps){
+    pipelineState = state;
 
-        setPipeline(step);
-
-        await new Promise(
-            r=>setTimeout(r,230)
-        );
-    }
-
-    setPipeline("validate");
+    renderPipeline(
+        processingType ||
+        getProcessingType(selectedFile)
+    );
 }
-
 
 /* =========================================================
    PREVIEW
@@ -1020,6 +1148,15 @@ function renderPreviewFromFile(savedName){
     const isPdf=
         selectedFile.type==="application/pdf" ||
         selectedFile.name.toLowerCase().endsWith(".pdf");
+    const isTextFile=selectedFile.type==="text/plain"||
+        selectedFile.name.toLowerCase().endsWith(".txt");
+
+    if(isTextFile){
+        resultPreview.appendChild(
+            createTextDocumentPreview(selectedFile,selectedPreviewUrl)
+        );
+        return;
+    }
 
     if(
         isPdf &&
@@ -1070,9 +1207,16 @@ function renderPreviewFromFile(savedName){
 function renderResults(result){
 
     currentResult=result;
+    resultsEl.classList.remove("csv-history-only");
 
     const category=
         result.document_category||{};
+    const processingType=
+        result.processing_type||
+        (typeof result.ocr_confidence==="number"
+            ?"image"
+            :getProcessingType(selectedFile));
+    const isTextResult=processingType==="text";
 
     $("category-metric").textContent=
         category.category
@@ -1084,12 +1228,23 @@ function renderResults(result){
         result._debug.detected_doc_type;
 
     $("detected-type-metric").textContent=
-        detected
+        isTextResult
+            ?"Text document classification"
+            :detected
             ?`Detected capture type: ${humanizeKey(detected)}`
             :"Capture type not available";
 
+    $("confidence-metric").parentElement.querySelector("span").textContent=
+        isTextResult
+            ?"TYPE CONFIDENCE"
+            :"OCR CONFIDENCE";
+
     const confidence=
-        result.ocr_confidence;
+        isTextResult
+            ?typeof category.confidence==="number"
+                ?category.confidence*100
+                :null
+            :result.ocr_confidence;
 
     const conf=
         typeof confidence==="number"
@@ -1114,30 +1269,39 @@ function renderResults(result){
         );
 
     reviewBadge.textContent=
-        needsReview
+        isTextResult
+            ?"✓ Text extraction complete"
+            :needsReview
             ?"⚠ Needs review"
             :"✓ Validation passed";
 
     reviewBadge.className=
-        `review-badge ${
-            needsReview
-                ?"warn"
-                :"good"
-        }`;
+        `review-badge ${!isTextResult&&needsReview?"warn":"good"}`;
+
+    $("validation-metric").parentElement.querySelector("span").textContent=
+        isTextResult
+            ?"TEXT PIPELINE"
+            :"VALIDATION";
 
     $("validation-metric").textContent=
-        needsReview
+        isTextResult
+            ?"Schema inferred"
+            :needsReview
             ?"Review required"
             :"Passed";
 
     const warnings=
-        (
-            result.validation &&
-            result.validation.quality_warnings
-        )||[];
+        isTextResult
+            ?[]
+            :(
+                result.validation &&
+                result.validation.quality_warnings
+            )||[];
 
     $("quality-metric").textContent=
-        warnings.length
+        isTextResult
+            ?"Image checks not applicable"
+            :warnings.length
             ?`${warnings.length} quality warning${
                 warnings.length>1?"s":""
             }`
@@ -1149,7 +1313,9 @@ function renderResults(result){
             :"";
 
     qualityWarning.hidden=
-        !warnings.length;
+        isTextResult||!warnings.length;
+
+    document.querySelector(".quality-panel").hidden=isTextResult;
 
     renderCsvExtractedTable(result);
 
@@ -1235,14 +1401,7 @@ function renderResults(result){
     resultsEl.hidden=false;
 
     pipelineCard.hidden=false;
-    pipelineStatus.textContent="COMPLETE";
-
-    document
-        .querySelectorAll(".pipe-step")
-        .forEach(x=>{
-            x.classList.remove("active");
-            x.classList.add("done");
-        });
+    setPipelineState("complete",processingType);
 }
 
 
@@ -1386,6 +1545,7 @@ function renderCsvExtractedTable(result){
 
     csvExtractedHead.innerHTML="";
     csvExtractedBody.innerHTML="";
+    resultsEl.classList.remove("csv-history-only");
 
     if(!headers.length){
 
@@ -1636,6 +1796,7 @@ function resetForm(){
     resultsCard.hidden=true;
     pipelineCard.hidden=true;
     resultsEl.hidden=true;
+    resultsEl.classList.remove("csv-history-only");
     loadingEl.hidden=true;
 
     csvExtractedSection.hidden=true;
@@ -1643,6 +1804,7 @@ function resetForm(){
     csvExtractedBody.innerHTML="";
 
     clearError();
+    setPipelineState("ready");
     updateSubmitState();
     renderHistory();
 }
@@ -1654,7 +1816,7 @@ function resetForm(){
 
 submitBtn.onclick=async()=>{
 
-    if(!selectedFile){
+    if(!selectedFile||pdfTypeChecking){
         return;
     }
 
@@ -1668,11 +1830,9 @@ submitBtn.onclick=async()=>{
     loadingEl.hidden=false;
 
     pipelineCard.hidden=false;
-    pipelineStatus.textContent="PROCESSING";
+    setPipelineState("processing",selectedProcessingType);
 
     submitBtn.disabled=true;
-
-    animatePipeline();
 
     const fd=new FormData();
 
@@ -1693,7 +1853,7 @@ submitBtn.onclick=async()=>{
             );
 
         const data=
-            await response.json();
+            await readApiJson(response,"Document processing");
 
         if(!response.ok){
             throw new Error(
@@ -1730,7 +1890,8 @@ submitBtn.onclick=async()=>{
     }catch(err){
 
         resultsCard.hidden=true;
-        pipelineCard.hidden=true;
+        pipelineCard.hidden=false;
+        setPipelineState("failed");
 
         showError(err.message);
 
@@ -1763,9 +1924,12 @@ downloadCsvBtn.onclick=()=>{
 
 clearHistoryBtn.onclick=()=>{
 
-    localStorage.removeItem(
-        HISTORY_KEY
-    );
+    try{
+        localStorage.removeItem(HISTORY_KEY);
+    }catch{
+        showError("Could not clear browser history storage.");
+        return;
+    }
 
     renderHistory();
 };

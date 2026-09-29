@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Cpath d='M16 18h18l14 14-14 14H16l14-14-14-14zm22 0h10v28H38z' fill='%23e2e8f0'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='11') }}">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="{{ url_for('static', filename='workspace.css', v='1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='workspace.css', v='3') }}">
 </head>
 <body>
   <div class="app-shell">
@@ -27,8 +27,8 @@
         <div class="hero-copy">
           <div class="eyebrow">DOCUMENT INTELLIGENCE</div>
           <h1>Read any document.<br><span>Trust every field.</span></h1>
-          <p class="subtitle">Turn scans, photos, and PDFs into structured information you can review, validate, and export.</p>
-          <div class="hero-stats"><div><b>5</b><span>processing stages</span></div><div><b>1 click</b><span>to CSV export</span></div><div><b>15 MB</b><span>maximum file size</span></div></div>
+          <p class="subtitle">Turn text files, scans, photos, and PDFs into structured information you can review, validate, and export.</p>
+          <div class="hero-stats"><div><b>Dynamic</b><span>processing stages</span></div><div><b>1 click</b><span>to CSV export</span></div><div><b>15 MB</b><span>maximum file size</span></div></div>
         </div>
 
         <section class="card upload-card" id="upload-card">
@@ -37,7 +37,7 @@
               <h2>Upload document</h2>
               <p>Start with a PDF, scan, photo, or screenshot.</p>
             </div>
-            <div class="file-types"><span>PDF</span><span>PNG</span><span>JPG</span><span>TIFF</span></div>
+            <div class="file-types"><span>PDF</span><span>PNG</span><span>JPG</span><span>TXT</span><span>TIFF</span></div>
           </div>
 
           <label for="file-input" class="dropzone" id="dropzone">
@@ -52,7 +52,7 @@
             <div class="file-types scanner-types"><span>PDF</span><span>PNG</span><span>JPG</span><span>TIFF</span></div>
             <div id="file-name" class="file-name" hidden></div>
           </label>
-          <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff" hidden>
+          <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.txt" hidden>
 
           <div class="selected-file" id="selected-file" hidden>
             <div class="file-icon">DOC</div>
@@ -63,19 +63,19 @@
           <div class="controls">
             <button id="submit-btn" class="primary-btn" disabled><span>Extract structured data</span><b>→</b></button>
           </div>
-          <p id="error" class="error" hidden></p>
+          <p id="error" class="error" role="alert" hidden></p>
         </section>
       </section>
 
       <section class="card pipeline-card" id="pipeline-card" hidden>
         <div class="section-heading compact">
-          <div><h2>Processing pipeline</h2><p>From raw document to validated structured data.</p></div>
-          <span id="pipeline-status" class="processing-pill">PROCESSING</span>
+          <div><h2>Processing pipeline</h2><p id="pipeline-subtitle">From raw document to validated structured data.</p></div>
+          <span id="pipeline-status" class="processing-pill" role="status" aria-live="polite" aria-atomic="true">PROCESSING</span>
         </div>
         <div class="pipeline" id="pipeline">
-          <div class="pipe-step active" data-step="quality"><span class="pipe-icon">01</span><strong>Quality</strong><small>Image analysis</small></div>
+          <div class="pipe-step active" data-step="quality"><span class="pipe-icon">01</span><strong>Quality</strong><small>Input review</small></div>
           <div class="pipe-line"></div>
-          <div class="pipe-step" data-step="ocr"><span class="pipe-icon">02</span><strong>OCR</strong><small>Text recognition</small></div>
+          <div class="pipe-step" data-step="ocr"><span class="pipe-icon">02</span><strong>OCR</strong><small>Text + image recognition</small></div>
           <div class="pipe-line"></div>
           <div class="pipe-step" data-step="classify"><span class="pipe-icon">03</span><strong>Classify</strong><small>Document type</small></div>
           <div class="pipe-line"></div>
@@ -148,6 +148,7 @@
 
           <div class="result-actions">
             <button id="reset-btn" class="primary-btn" type="button">Process another document <b>→</b></button>
+          </div>
         </div>
       </section>
 
@@ -159,7 +160,7 @@
 
     <footer>Document Intelligence · Unstructured Data</footer>
   </div>
-  <script src="{{ url_for('static', filename='script.js', v='12') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='script.js', v='21') }}"></script>
   <!-- Document View Popup -->
 <div
     id="documentViewModal"

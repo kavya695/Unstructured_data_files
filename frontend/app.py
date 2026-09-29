@@ -28,12 +28,13 @@ from flask import Flask, jsonify, render_template, request
 
 from ocr_pipeline.pipeline import process_document
 from ocr_pipeline.pdf_support import process_pdf
+from text_pipeline_adapter import is_text_pdf, process_text_document
 
 BASE_DIR = Path(__file__).parent
 UPLOAD_DIR = BASE_DIR / "ocr_pipeline_uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
+ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".txt"}
 MAX_CONTENT_LENGTH = 15 * 1024 * 1024  # 15 MB
 
 app = Flask(__name__)
@@ -43,6 +44,28 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/api/processing-type", methods=["POST"])
+def api_processing_type():
+    file = request.files.get("file")
+    if file is None or not file.filename:
+        return jsonify({"error": "No file selected."}), 400
+
+    ext = Path(file.filename).suffix.lower()
+    if ext != ".pdf":
+        return jsonify({"error": "Processing type detection expects a PDF."}), 400
+
+    temp_path = UPLOAD_DIR / f"{uuid.uuid4().hex}{ext}"
+    file.save(temp_path)
+    try:
+        processing_type = "text" if is_text_pdf(temp_path) else "image"
+        return jsonify({"processing_type": processing_type})
+    except Exception as exc:
+        traceback.print_exc()
+        return jsonify({"error": f"Could not inspect PDF: {exc}"}), 500
+    finally:
+        temp_path.unlink(missing_ok=True)
 
 
 @app.route("/api/process", methods=["POST"])
@@ -66,21 +89,32 @@ def api_process():
     doc_type = request.form.get("doc_type") or None
 
     temp_path = UPLOAD_DIR / f"{uuid.uuid4().hex}{ext}"
+    text_result_path = temp_path.with_name(f"{temp_path.stem}.result.json")
     file.save(temp_path)
 
     try:
-        if ext == ".pdf":
+        if ext == ".txt" or (ext == ".pdf" and is_text_pdf(temp_path)):
+            result = process_text_document(
+                temp_path,
+                file.filename,
+                text_result_path,
+            )
+        elif ext == ".pdf":
             result = process_pdf(str(temp_path), doc_type=doc_type)
             result.setdefault("_debug", {})["detected_doc_type"] = result.get("source_type")
+            result["processing_type"] = "image"
         else:
             result = process_document(str(temp_path), doc_type=doc_type)
+            result["processing_type"] = "image"
         return jsonify(result)
     except Exception as exc:  # surface pipeline errors to the UI instead of a raw 500 page
         traceback.print_exc()
         return jsonify({"error": f"Processing failed: {exc}"}), 500
     finally:
         temp_path.unlink(missing_ok=True)
+        text_result_path.unlink(missing_ok=True)
+        text_result_path.with_suffix(".csv").unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
